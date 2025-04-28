@@ -8,7 +8,11 @@ const SideNav = ({ selectedPokemon, setSelectedPokemon }) => {
       </div>
       <input type='text' />
       {first151Pokemon.map((pokemon, pokemonIndex) => (
-        <button key={pokemonIndex} className={'nav-card'}>
+        <button
+          key={pokemonIndex}
+          className={'nav-card'}
+          onClick={() => setSelectedPokemon(pokemonIndex)}
+        >
           <p>{getFullPokedexNumber(pokemonIndex)}</p>
           <p>{pokemon}</p>
         </button>

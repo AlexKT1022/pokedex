@@ -240,3 +240,13 @@ export function getFullPokedexNumber(index) {
       : `00${index + 1}`
   }`;
 }
+
+export function formatPokemonName(pokemonName) {
+  const formattedName =
+    (pokemonName === 'nidoran-f' && 'Nidoran♀') ||
+    (pokemonName === 'nidoran-m' && 'Nidoran♂') ||
+    (pokemonName === 'mr-mime' && 'Mr. Mime') ||
+    pokemonName.charAt(0).toUpperCase() + pokemonName.substring(1);
+
+  return formattedName;
+}
