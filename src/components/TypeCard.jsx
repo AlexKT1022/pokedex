@@ -1,5 +1,5 @@
-const TypeCard = () => {
-  return <div>TypeCard</div>;
+const TypeCard = ({ type }) => {
+  return <div>{type}</div>;
 };
 
 export default TypeCard;
