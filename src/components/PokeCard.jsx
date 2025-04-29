@@ -5,10 +5,14 @@ import {
   getPokedexNumber,
   formatPokemonName,
 } from '../utils';
+import Modal from './Modal.jsx';
 
 const PokeCard = ({ selectedPokemon }) => {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loadingData, setLoadingData] = useState(false);
+  const [selectedMove, setSelectedMove] = useState(null);
+  const [loadingMove, setLoadingMove] = useState(false);
+
   const { name, height, abilities, stats, types, moves, sprites } = data || {};
   const imgList = Object.keys(sprites || {}).filter((key) => {
     if (!sprites[key] || ['versions', 'other'].includes(key)) {
@@ -18,10 +22,59 @@ const PokeCard = ({ selectedPokemon }) => {
     return true;
   });
 
+  const fetchMoveData = async (moveInfo) => {
+    let moveCache = {};
+
+    if (loadingMove || !localStorage || !moveInfo) {
+      return;
+    }
+
+    if (localStorage.getItem('pokemon-moves')) {
+      moveCache = JSON.parse(localStorage.getItem('pokemon-moves'));
+    }
+
+    if (moveInfo.name in moveCache) {
+      setSelectedMove(moveCache[moveInfo.name]);
+
+      console.log(`Move ${moveInfo.name} found in cache.`);
+
+      return;
+    }
+
+    try {
+      setLoadingMove(true);
+
+      const res = await fetch(moveInfo.url);
+      const moveData = await res.json();
+
+      console.log(`Move ${moveInfo.name} fetched from API.`);
+
+      const description = moveData?.flavor_text_entries.find(
+        (entry) =>
+          entry.language.name === 'en' &&
+          entry.version_group.name === 'firered-leafgreen'
+      ).flavor_text;
+      const moveDescription = {
+        name: moveData.name,
+        description,
+      };
+
+      setSelectedMove(moveDescription);
+
+      moveCache[moveData.name] = moveDescription;
+
+      localStorage.setItem('pokemon-moves', JSON.stringify(moveCache));
+    } catch (err) {
+      console.log(err.message);
+    } finally {
+      setLoadingMove(false);
+    }
+  };
+
   useEffect(() => {
     let cache = {};
     const fetchPokemonData = async () => {
-      setLoading(true);
+      setLoadingData(true);
 
       try {
         const pokedexNumber = getPokedexNumber(selectedPokemon);
@@ -33,18 +86,18 @@ const PokeCard = ({ selectedPokemon }) => {
 
         cache[selectedPokemon] = pokemonData;
 
-        console.log(pokemonData);
+        console.log(`Pokemon ${pokemonData.name} fetched from API.`);
 
         localStorage.setItem('pokedex', JSON.stringify(cache));
       } catch (err) {
         console.log(err.message);
       } finally {
-        setLoading(false);
+        setLoadingData(false);
       }
     };
 
     // if loading, exit logic
-    if (loading || !localStorage) {
+    if (loadingData || !localStorage) {
       return;
     }
 
@@ -57,6 +110,8 @@ const PokeCard = ({ selectedPokemon }) => {
     if (selectedPokemon in cache) {
       setData(cache[selectedPokemon]);
 
+      console.log(`Pokemon ${cache[selectedPokemon].name} found in cache.`);
+
       return;
     }
 
@@ -64,7 +119,7 @@ const PokeCard = ({ selectedPokemon }) => {
     fetchPokemonData();
   }, [selectedPokemon]); // triggers when selectedPokemon changes
 
-  if (loading || !data) {
+  if (loadingData || !data) {
     return (
       <div>
         <h4>Loading...</h4>
@@ -74,6 +129,24 @@ const PokeCard = ({ selectedPokemon }) => {
 
   return (
     <div className='poke-card'>
+      {selectedMove && (
+        <Modal
+          handleCloseModal={() => {
+            setSelectedMove(null);
+          }}
+        >
+          <div>
+            <h6>Name</h6>
+            <h2 className='skill-name'>
+              {selectedMove.name.replaceAll('-', ' ')}
+            </h2>
+          </div>
+          <div>
+            <h6>Description</h6>
+            <p>{selectedMove.description}</p>
+          </div>
+        </Modal>
+      )}
       <div>
         <h4>#{getFullPokedexNumber(selectedPokemon)}</h4>
         <h2>{formatPokemonName(name)}</h2>
@@ -118,7 +191,8 @@ const PokeCard = ({ selectedPokemon }) => {
       <h3>Moves</h3>
       <div className='pokemon-move-grid'>
         {moves.map((moveObj, moveIndex) => {
-          const moveName = moveObj?.move?.name.replaceAll('-', ' ');
+          const moveInfo = moveObj?.move;
+          const moveName = moveInfo.name.replaceAll('-', ' ');
 
           // moveIndex === 0 && console.log(moveObj);
 
@@ -126,7 +200,9 @@ const PokeCard = ({ selectedPokemon }) => {
             <button
               key={moveIndex}
               className='button-card pokemon-move'
-              onClick={() => {}}
+              onClick={() => {
+                fetchMoveData(moveInfo);
+              }}
             >
               <p>{moveName}</p>
             </button>
