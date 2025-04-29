@@ -5,7 +5,7 @@ const SideNav = ({
   selectedPokemon,
   setSelectedPokemon,
   showSideMenu,
-  handleToggleMenu,
+  handleCloseMenu,
 }) => {
   const [searchValue, setSearchValue] = useState('');
   const filteredPokemon = first151Pokemon.filter(
@@ -27,9 +27,9 @@ const SideNav = ({
   };
 
   return (
-    <nav className={!showSideMenu ? 'open' : ''}>
-      <div className={!showSideMenu ? 'header open' : 'header'}>
-        <button className='open-nav-button' onClick={handleToggleMenu}>
+    <nav className={showSideMenu ? 'open' : ''}>
+      <div className={showSideMenu ? 'header open' : 'header'}>
+        <button className='open-nav-button' onClick={handleCloseMenu}>
           <i className='fa-solid fa-arrow-left-long'></i>
         </button>
         <h1 className='text-gradient'>Pokédex</h1>
@@ -53,7 +53,10 @@ const SideNav = ({
                 ? 'nav-card nav-card-selected'
                 : 'nav-card'
             }`}
-            onClick={() => setSelectedPokemon(pokedexNumber)}
+            onClick={() => {
+              setSelectedPokemon(pokedexNumber);
+              handleCloseMenu();
+            }}
           >
             <p>{getFullPokedexNumber(pokedexNumber)}</p>
             <p>{pokemon}</p>
