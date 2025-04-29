@@ -1,4 +1,3 @@
-// timestamp -> 3:31:30
 import { useState } from 'react';
 import Header from './components/Header.jsx';
 import SideNav from './components/SideNav.jsx';
