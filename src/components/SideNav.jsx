@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { first151Pokemon, getFullPokedexNumber } from '../utils';
 
-const SideNav = ({ selectedPokemon, setSelectedPokemon }) => {
+const SideNav = ({
+  selectedPokemon,
+  setSelectedPokemon,
+  showSideMenu,
+  handleToggleMenu,
+}) => {
   const [searchValue, setSearchValue] = useState('');
   const filteredPokemon = first151Pokemon.filter(
     (pokemonName, pokemonIndex) => {
@@ -22,8 +27,11 @@ const SideNav = ({ selectedPokemon, setSelectedPokemon }) => {
   };
 
   return (
-    <nav>
-      <div className='header'>
+    <nav className={!showSideMenu ? 'open' : ''}>
+      <div className={!showSideMenu ? 'header open' : 'header'}>
+        <button className='open-nav-button' onClick={handleToggleMenu}>
+          <i className='fa-solid fa-arrow-left-long'></i>
+        </button>
         <h1 className='text-gradient'>Pokédex</h1>
       </div>
       <input
